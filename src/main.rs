@@ -16,13 +16,5 @@ fn main() {
     let mut sectors = DangerSectors::new();
     sectors.analyze(&img);
 
-    let instruction = get_instruction(&sectors);
-
-    match instruction {
-        Instruction::Stop => println!("STOP"),
-        Instruction::Right => println!("RIGHT"),
-        Instruction::Left => println!("LEFT"),
-        Instruction::Nil => println!("NIL"),
-    }
-
+    println!("{}", sectors.get_instruction().to_string());
 }
