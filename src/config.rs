@@ -87,7 +87,7 @@ Program that analyzes an image processed by depth-detection AI models.
 
 Version: 
 
-    0.1.4
+    0.1.5
 
 Usage:
 
