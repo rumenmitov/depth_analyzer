@@ -16,6 +16,7 @@
 //!                                 use as an indicator for proximity.
 //!
 //! `-t`, `--threshold` **[ 0 .. 255 ]**    Specifies the value a pixel must have in order to be 
+//!                                 considered to be of the proximity color.
 //!
 //! ## Possible Results
 //!
@@ -52,7 +53,7 @@ impl Display for Instruction {
     }
 }
 
-/// Each sector of the image has a **total red pixels** and a *total pixel* count.
+/// Each sector of the image has a **total red pixels** and a **total pixel** count.
 /// A **red pixel** is a pixel that has a Red value higher than 150.
 #[derive(PartialEq, Debug)]
 pub struct DangerSectors {
