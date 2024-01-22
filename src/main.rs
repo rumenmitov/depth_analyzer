@@ -1,20 +1,13 @@
-use std::{env, process};
-
-use depth_analyzer::*;
+use std::env;
 
 fn main() {
 
-    let args :Vec<String> = env::args().collect();
-    let img = match image::open(&args[1]) {
-        Ok(img_result) => img_result,
-        _ => {
-            eprintln!("Could not open file: {}", args[1]); 
-            process::exit(1);
-        }
-    };
+    let image_config = depth_analyzer::config::ImageConfig::new(&mut env::args());
 
-    let mut sectors = DangerSectors::new();
-    sectors.analyze(&img);
+    let mut sectors = depth_analyzer::DangerSectors::new();
+
+    // TODO: Replace &img with &imgage_config
+    sectors.analyze(image_config);
 
     println!("{}", sectors.get_instruction().to_string());
 }

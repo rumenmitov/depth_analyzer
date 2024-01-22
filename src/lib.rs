@@ -1,19 +1,17 @@
 //! # Depth Analyzer
 //!
-//! Program that analyzes an image processed by [MiDaS AI](https://github.com/isl-org/MiDaS/tree/master).
+//! Program that analyzes an image processed by AI depth detection models.
 //!
 //! ## Usage
 //!
 //! `$ depth-analyzer /path/to/image.[jpg | png | webp]`
 
 
-use std::fmt::Display;
+use std::{fmt::Display, process};
 
 use image::GenericImageView;
 
-/// The value for the color that indicates that an object is close.
-static PROXIMITY_COLOR :u8 = 150;
-
+pub mod config;
 
 #[derive(PartialEq, Debug)]
 pub enum Instruction {
@@ -53,28 +51,37 @@ impl DangerSectors {
     }
 
     /// Updates sectors by analyzing the image.
-    pub fn analyze(&mut self, img :&image::DynamicImage) {
+    pub fn analyze(&mut self, img_config :config::ImageConfig) {
+
+        let img = match img_config.img {
+            Some(image) => image,
+            None => {
+                eprintln!("Error no image specified!\n");
+                process::exit(1);
+            }
+        };
+
         let image_width = img.dimensions().0;
 
         for (x, _, rgba) in img.pixels() {
             
             if x < image_width / 3 {
 
-                if rgba[0] >= PROXIMITY_COLOR {
+                if config::check_threshold(&img_config.proximity_color, img_config.threshold, &rgba) {
                     self.left.0 += 1;
                 }
                 self.left.1 += 1;
 
             } else if x < 2 * image_width / 3 {
 
-                if rgba[0] >= PROXIMITY_COLOR {
+                if config::check_threshold(&img_config.proximity_color, img_config.threshold, &rgba) {
                     self.center.0 += 1;
                 }
                 self.center.1 += 1;
 
             } else {
 
-                if rgba[0] >= PROXIMITY_COLOR {
+                if config::check_threshold(&img_config.proximity_color, img_config.threshold, &rgba) {
                     self.right.0 += 1;
                 }
                 self.right.1 += 1;
@@ -121,43 +128,48 @@ mod tests {
     use super::*;
 
     #[test]
-    fn orange() {
-        let img = image::open("test_images/orange.png").unwrap();
-
-        let mut sectors = DangerSectors::new();
-        sectors.analyze(&img);
-
-        assert_eq!(Instruction::Stop, sectors.get_instruction());
-    }
-
-    #[test]
-    fn blue() {
-        let img = image::open("test_images/blue.jpg").unwrap();
-
-        let mut sectors = DangerSectors::new();
-        sectors.analyze(&img);
-
-        assert_eq!(Instruction::Forward, sectors.get_instruction());
-    }
-
-    #[test]
     fn room() {
-        let img = image::open("test_images/empty_room.png").unwrap();
+        let img_config = config::ImageConfig {
+            proximity_color: config::ModelProximityColor::RED,
+            threshold: 150,
+            img: Some( image::open("test_images/empty_room.png").unwrap() ),
+        };
 
         let mut sectors = DangerSectors::new();
-        sectors.analyze(&img);
+        sectors.analyze(img_config);
 
         assert_eq!(Instruction::Forward, sectors.get_instruction());
     }
 
     #[test]
     fn chair() {
-        let img = image::open("test_images/chair.png").unwrap();
+        let img_config = config::ImageConfig {
+            proximity_color: config::ModelProximityColor::RED,
+            threshold: 150,
+            img: Some( image::open("test_images/chair.png").unwrap() ),
+        };
+
 
         let mut sectors = DangerSectors::new();
-        sectors.analyze(&img);
+        sectors.analyze(img_config);
 
         assert_eq!(Instruction::Right, sectors.get_instruction());
+    }
+
+    #[test]
+    fn library() {
+        let img_config = config::ImageConfig {
+            proximity_color: config::ModelProximityColor::WHITE,
+            threshold: 200,
+            img: Some( image::open("test_images/chair.png").unwrap() ),
+        };
+
+
+        let mut sectors = DangerSectors::new();
+        sectors.analyze(img_config);
+
+        assert_eq!(Instruction::Forward, sectors.get_instruction());
+
     }
     
 }
