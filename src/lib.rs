@@ -6,6 +6,7 @@
 //!
 //! `$ depth-analyzer /path/to/image.[jpg | png | webp]`
 
+
 use std::fmt::Display;
 
 use image::GenericImageView;
@@ -16,9 +17,10 @@ static PROXIMITY_COLOR :u8 = 150;
 
 #[derive(PartialEq, Debug)]
 pub enum Instruction {
-    Right,
     Left,
-    Nil
+    Forward,
+    Right,
+    Stop
 }
 
 impl Display for Instruction {
@@ -26,7 +28,8 @@ impl Display for Instruction {
         match self {
             Self::Right => write!(f, "{}", "RIGHT"),
             Self::Left => write!(f, "{}", "LEFT"),
-            Self::Nil => write!(f, "{}", "NIL"),
+            Self::Forward => write!(f, "{}", "FORWARD"),
+            Self::Stop => write!(f, "{}", "STOP"),
         }
     }
 }
@@ -36,16 +39,16 @@ impl Display for Instruction {
 #[derive(PartialEq, Debug)]
 pub struct DangerSectors {
     left :(u32, u32),
+    center :(u32, u32),
     right :(u32, u32),
-    center :(u32, u32)
 }
 
 impl DangerSectors {
     pub fn new() -> DangerSectors {
         DangerSectors {
             left: (0, 0),
+            center: (0, 0),
             right: (0, 0),
-            center: (0, 0)
         }
     }
 
@@ -92,12 +95,16 @@ impl DangerSectors {
 
     /// Based on the dangers in each sector, determines the outcome for the user.
     ///
-    /// NOTE: The precedence is Nil (i.e. center path), Right, Left
+    /// NOTE: The precedence is **Forward**, **Right**, **Left**
+    /// NOTE: If the ratio of Red pixels in each sector is >= 50% then **Stop**.
     pub fn get_instruction(&self) -> Instruction {
         let (left, center, right) = self.get_ratios();
 
-        if center <= right && center <= left {
-            Instruction::Nil
+        if left >= 0.5 && center >= 0.5 && right >= 0.5 {
+            Instruction::Stop
+
+        } else if center <= right && center <= left {
+            Instruction::Forward
 
         } else if right < center && right <= left {
             Instruction::Right
@@ -114,13 +121,13 @@ mod tests {
     use super::*;
 
     #[test]
-    fn orange_not_red() {
+    fn orange() {
         let img = image::open("test_images/orange.png").unwrap();
 
         let mut sectors = DangerSectors::new();
         sectors.analyze(&img);
 
-        assert_eq!(Instruction::Nil, sectors.get_instruction());
+        assert_eq!(Instruction::Stop, sectors.get_instruction());
     }
 
     #[test]
@@ -130,17 +137,27 @@ mod tests {
         let mut sectors = DangerSectors::new();
         sectors.analyze(&img);
 
-        assert_eq!(Instruction::Nil, sectors.get_instruction());
+        assert_eq!(Instruction::Forward, sectors.get_instruction());
     }
 
     #[test]
     fn room() {
-        let img = image::open("test_images/infrared.png").unwrap();
+        let img = image::open("test_images/empty_room.png").unwrap();
 
         let mut sectors = DangerSectors::new();
         sectors.analyze(&img);
 
-        assert_eq!(Instruction::Nil, sectors.get_instruction());
+        assert_eq!(Instruction::Forward, sectors.get_instruction());
+    }
+
+    #[test]
+    fn chair() {
+        let img = image::open("test_images/chair.png").unwrap();
+
+        let mut sectors = DangerSectors::new();
+        sectors.analyze(&img);
+
+        assert_eq!(Instruction::Right, sectors.get_instruction());
     }
     
 }

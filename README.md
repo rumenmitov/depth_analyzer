@@ -13,6 +13,6 @@ depth-analyzer /path/to/image.[jpg | png | webp]
   
 The user can expect one of the following instructions:  
 - `STOP` - all paths are obstructed  
-- `NIL` - the *center* path is unobstructed
+- `FORWARD` - the *center* path is unobstructed
 - `RIGHT` - the *center* path is obstructed, but the *right* is not
 - `LEFT` - the *left* path is the only unobstructed path
