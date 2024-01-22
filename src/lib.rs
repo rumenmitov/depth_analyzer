@@ -5,6 +5,26 @@
 //! ## Usage
 //!
 //! `$ depth-analyzer /path/to/image.[jpg | png | webp]`
+//!
+//! ### Options
+//!
+//! `-h`, `--help`                      Displays this help menu.
+//!
+//! `-v`, `--version`                   Displays version.
+//!
+//! `-c`, `--color` **[ RED | WHITE ]**     Specifies which color to 
+//!                                 use as an indicator for proximity.
+//!
+//! `-t`, `--threshold` **[ 0 .. 255 ]**    Specifies the value a pixel must have in order to be 
+//!
+//! ## Possible Results
+//!
+//! In order of precedence:
+//!
+//! - `FORWARD`
+//! - `RIGHT`
+//! - `LEFT`
+//! - `STOP`
 
 
 use std::{fmt::Display, process};
