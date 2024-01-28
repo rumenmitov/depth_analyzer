@@ -77,7 +77,9 @@ For more information please use the -h option.\n");
                 },
 
                 Some(arg_option) if arg_option == "-h" || arg_option == "--help" => {
-                    println!("  /----------------/
+                    println!("\
+\n
+  /----------------/
  / Depth Analyzer /
 /----------------/
 
@@ -87,7 +89,7 @@ Program that analyzes an image processed by depth-detection AI models.
 
 Version: 
 
-    0.1.5
+    0.1.7
 
 Usage:
 
@@ -118,7 +120,7 @@ Possible Results (in order of precedence):
 
                 Some(arg_option) if arg_option == "-v" || arg_option == "--version" => {
                     println!("\
-Depth Ananlyzer v0.1.6
+\nDepth Analyzer v0.1.7
 
 ");
                     process::exit(0);
