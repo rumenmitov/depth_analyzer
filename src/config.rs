@@ -118,10 +118,10 @@ Possible Results (in order of precedence):
 
                 Some(arg_option) if arg_option == "-v" || arg_option == "--version" => {
                     println!("\
-Depth Ananlyzer v0.1.3
+Depth Ananlyzer v0.1.6
 
 ");
-                    argv.next();
+                    process::exit(0);
                 },
 
                 Some(img_path) => {
