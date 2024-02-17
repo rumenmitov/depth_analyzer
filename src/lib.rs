@@ -18,6 +18,9 @@
 //! `-t`, `--threshold` **[ 0 .. 255 ]**    Specifies the value a pixel must have in order to be 
 //!                                 considered to be of the proximity color.
 //!
+//! `-w`, `--watch` **[ /path/to/images ]**     Analyze images as they come in. If no path is
+//!                                 provided, current directory is used.
+//!
 //! ## Possible Results
 //!
 //! In order of precedence:
@@ -28,7 +31,7 @@
 //! - `STOP`
 
 
-use std::{fmt::Display, process};
+use std::{fmt::Display, process, fs};
 
 use image::GenericImageView;
 
@@ -72,9 +75,62 @@ impl DangerSectors {
     }
 
     /// Updates sectors by analyzing the image.
-    pub fn analyze(&mut self, img_config :config::ImageConfig) {
+    pub fn analyze(&mut self, img_config :&mut config::ImageConfig) {
 
-        let img = match img_config.img {
+        if let Some(watch_dir) = img_config.watch_dir.take() {
+            loop {
+                if fs::read_dir(&watch_dir).unwrap().count() == 0 {
+                    continue;
+                }
+
+                for image_option in fs::read_dir(&watch_dir).unwrap() {
+                    let image = image_option.expect("Error: Image does not exist!");
+
+                    match &image.path().extension() {
+
+                        Some(ext) if ext.to_str().unwrap() == "png" ||
+                                     ext.to_str().unwrap() == "jpg" ||
+                                     ext.to_str().unwrap() == "jpeg" ||
+                                     ext.to_str().unwrap() == "webp" => {
+
+                            match image::open(&image.path()) {
+                                Ok(res) => {
+                                    img_config.img = Some(res);
+                                    self.count_pixels(img_config);
+                                    println!("{} : {}", image
+                                             .file_name()
+                                             .to_str()
+                                             .unwrap(), 
+                                             self.get_instruction().to_string());
+                                },
+
+                                _ => {
+                                    eprintln!("Error: Could not open file: {}", 
+                                              image
+                                              .path()
+                                              .to_str()
+                                              .unwrap()); 
+                                    process::exit(1);
+                                }
+                            }
+                        },
+
+                        _ => continue,
+
+                    };
+
+                }
+            }
+        }
+
+        self.count_pixels(img_config);
+
+    }
+
+    /// Counts the pixels that meet the threshold in each sector.
+    fn count_pixels(&mut self, img_config :&mut config::ImageConfig) {
+
+        let img = match img_config.img.take() {
             Some(image) => image,
             None => {
                 eprintln!("Error no image specified!\n");
@@ -150,47 +206,48 @@ mod tests {
 
     #[test]
     fn room() {
-        let img_config = config::ImageConfig {
+        let mut img_config = config::ImageConfig {
             proximity_color: config::ModelProximityColor::RED,
             threshold: 150,
             img: Some( image::open("test_images/empty_room.png").unwrap() ),
+            watch_dir: None,
         };
 
         let mut sectors = DangerSectors::new();
-        sectors.analyze(img_config);
+        sectors.analyze(&mut img_config);
 
         assert_eq!(Instruction::Forward, sectors.get_instruction());
     }
 
     #[test]
     fn chair() {
-        let img_config = config::ImageConfig {
+        let mut img_config = config::ImageConfig {
             proximity_color: config::ModelProximityColor::RED,
             threshold: 150,
             img: Some( image::open("test_images/chair.png").unwrap() ),
+            watch_dir: None,
         };
 
 
         let mut sectors = DangerSectors::new();
-        sectors.analyze(img_config);
+        sectors.analyze(&mut img_config);
 
         assert_eq!(Instruction::Right, sectors.get_instruction());
     }
 
     #[test]
     fn library() {
-        let img_config = config::ImageConfig {
+        let mut img_config = config::ImageConfig {
             proximity_color: config::ModelProximityColor::WHITE,
             threshold: 200,
             img: Some( image::open("test_images/chair.png").unwrap() ),
+            watch_dir: None,
         };
 
 
         let mut sectors = DangerSectors::new();
-        sectors.analyze(img_config);
+        sectors.analyze(&mut img_config);
 
         assert_eq!(Instruction::Forward, sectors.get_instruction());
-
     }
-    
 }

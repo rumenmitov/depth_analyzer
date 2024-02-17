@@ -1,4 +1,4 @@
-use std::process;
+use std::{process, path::PathBuf};
 
 pub enum ModelProximityColor {
     RED,
@@ -11,6 +11,8 @@ pub struct ImageConfig {
     /// Specifies the value a pixel must have in order to be considered to be of
     /// **proximity color**.
     pub threshold :u8,
+    /// Specifies option for watching a directory for new images.
+    pub watch_dir :Option<PathBuf>,
     pub img :Option<image::DynamicImage>,
 }
 
@@ -21,6 +23,7 @@ impl ImageConfig {
         let mut image_config = ImageConfig {
             proximity_color: ModelProximityColor::RED,
             threshold: 150,
+            watch_dir: None,
             img: None,
         };
 
@@ -76,6 +79,21 @@ For more information please use the -h option.\n");
 
                 },
 
+                Some(arg_option) if arg_option == "-w" || arg_option == "--watch" => {
+                    // NOTE: Move argv iterator once more, as -w flag is only peeked.
+                    argv.next();
+
+                    image_config.watch_dir = match argv.next() {
+                        Some(path) => Some(PathBuf::from(path)),
+                        None => Some(
+                            std::env::current_dir()
+                            .expect("Error! Could not read current directory.")
+                            )
+                    };
+
+                    argv.next();
+                }
+
                 Some(arg_option) if arg_option == "-h" || arg_option == "--help" => {
                     println!("\
 \n
@@ -89,7 +107,7 @@ Program that analyzes an image processed by depth-detection AI models.
 
 Version: 
 
-    0.1.7
+    0.2.0
 
 Usage:
 
@@ -120,7 +138,7 @@ Possible Results (in order of precedence):
 
                 Some(arg_option) if arg_option == "-v" || arg_option == "--version" => {
                     println!("\
-\nDepth Analyzer v0.1.7
+\nDepth Analyzer v0.2.0
 
 ");
                     process::exit(0);
