@@ -111,19 +111,22 @@ Version:
 
 Usage:
 
-    depth-analyzer /path/to/image.[jpg | png | webp]
+    depth-analyzer /path/to/image.[ jpg | jpeg | png | webp ]
 
 Options:
 
-    -h, --help                      Displays this help menu.
+    -h, --help                          Displays this help menu.
 
-    -v, --version                   Displays version.
+    -v, --version                       Displays version.
 
-    -c, --color [ RED | WHITE ]     Specifies which color to 
-                                    use as an indicator for proximity.
+    -c, --color [ RED | WHITE ]         Specifies which color to 
+                                        use as an indicator for proximity.
 
-    -t, --threshold [ 0 .. 255 ]    Specifies the value a pixel must have in order to be 
-                                    considered to be of the proximity color.
+    -t, --threshold [ 0 .. 255 ]        Specifies the value a pixel must have in order to be 
+                                        considered to be of the proximity color.
+
+    -w, --watch [ /path/to/images ]     Analyze images as they come in. If no path is
+                                        provided, current directory is used.
 
 Possible Results (in order of precedence):
 

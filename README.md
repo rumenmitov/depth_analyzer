@@ -8,7 +8,7 @@ cargo install depth_analyzer
 
 ## Usage
 ```sh
-depth-analyzer /path/to/image.[jpg | png | webp]
+depth-analyzer /path/to/image.[ jpg | jpeg | png | webp ]
 ```
 
 ### Options
@@ -34,9 +34,16 @@ Specifies which color to use as an indicator for proximity.
 </details>
 
 <details>
-<summary> <code>-t</code>, <code>--threshold</code> <b>[0 .. 255 ]</b> </summary>
+<summary> <code>-t</code>, <code>--threshold</code> <b>[ 0 .. 255 ]</b> </summary>
   
 Specifies the value a pixel must have in order to be considered to be of the proximity color.  
+  
+</details>
+
+<details>
+<summary> <code>-w</code>, <code>--watch</code> <b>[ /path/to/images ]</b> </summary>
+  
+Analyze images as they come in. If no path is provided, current directory is used.
   
 </details>
 
